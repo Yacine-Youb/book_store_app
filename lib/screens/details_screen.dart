@@ -1,6 +1,8 @@
 import 'package:book_shop/utils/book_data.dart';
+import 'package:book_shop/utils/book_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:provider/provider.dart';
 
 class ReadMoreText extends StatefulWidget {
   final String text;
@@ -49,10 +51,17 @@ class _ReadMoreTextState extends State<ReadMoreText> {
 }
 
 // ignore: must_be_immutable
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   final BookData bookData;
 
   DetailsScreen({Key? key, required this.bookData}) : super(key: key);
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  bool addedToFavourite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +84,22 @@ class DetailsScreen extends StatelessWidget {
           IconButton(
             style: const ButtonStyle(
                 backgroundColor: WidgetStatePropertyAll(Colors.white)),
-            icon: const Icon(HugeIcons.strokeRoundedFavourite),
-            onPressed: () {},
+            icon: addedToFavourite
+                ? const Icon(Icons.favorite, color: Color(0xffD4A056))
+                : const Icon(Icons.favorite_border, color: Color(0xffD4A056)),
+            onPressed: () {
+              if (addedToFavourite) {
+                Provider.of<BookProvider>(context, listen: false)
+                    .removeFavourite(widget.bookData);
+                addedToFavourite = false;
+                setState(() {});
+              } else {
+                Provider.of<BookProvider>(context, listen: false)
+                    .addFavourite(widget.bookData);
+                addedToFavourite = true;
+                setState(() {});
+              }
+            },
           ),
           const SizedBox(width: 20),
         ],
@@ -102,7 +125,7 @@ class DetailsScreen extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: Image(
                   fit: BoxFit.cover,
-                  image: AssetImage(bookData.imageUrl),
+                  image: AssetImage(widget.bookData.imageUrl),
                   width: 200,
                   height: 300,
                 ),
@@ -117,7 +140,7 @@ class DetailsScreen extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          bookData.title,
+                          widget.bookData.title,
                           softWrap: true,
                           overflow: TextOverflow.visible,
                           style: const TextStyle(
@@ -125,7 +148,7 @@ class DetailsScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "\$${bookData.price}",
+                        "\$${widget.bookData.price}",
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -139,7 +162,7 @@ class DetailsScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.star, color: Color(0xffFFD700)),
                       Text(
-                        "${bookData.rating}",
+                        "${widget.bookData.rating}",
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w400),
                       ),
@@ -156,7 +179,8 @@ class DetailsScreen extends StatelessWidget {
                       Spacer(),
                     ],
                   ),
-                  ReadMoreText(text: bookData.description, maxLength: 100),
+                  ReadMoreText(
+                      text: widget.bookData.description, maxLength: 100),
                 ],
               ),
             ),

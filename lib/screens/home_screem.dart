@@ -1,6 +1,7 @@
 import 'package:book_shop/components/best_selling_card.dart';
 import 'package:book_shop/components/book_card.dart';
 import 'package:book_shop/screens/cart_screen.dart';
+import 'package:book_shop/screens/favourit_screen.dart';
 import 'package:book_shop/utils/book_data.dart';
 import 'package:flutter/material.dart';
 
@@ -82,9 +83,9 @@ class _HomeScreemState extends State<HomeScreem> {
             IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
             const SizedBox(width: 10),
             const CircleAvatar(
-              radius: 20, // Half the diameter
+              radius: 20, 
               backgroundImage: AssetImage(
-                  'assets/images/profile.jpg'), // Replace with your image URL
+                  'assets/images/profile.jpg'), 
             ),
             const SizedBox(width: 10),
           ],
@@ -179,14 +180,20 @@ class _HomeScreemState extends State<HomeScreem> {
                   backgroundColor: Colors.white,
                   icon: Icon(Icons.home_outlined, color: Colors.black),
                   label: "Home"),
-              const BottomNavigationBarItem(
-                  activeIcon: Icon(
+              BottomNavigationBarItem(
+                  activeIcon: const Icon(
                     Icons.favorite,
                     color: Color(0xffD4A056),
                   ),
-                  icon: Icon(
-                    Icons.favorite_border,
-                    color: Colors.black,
+                  icon: InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const FavouritScreen()));
+                    },
+                    child: const Icon(
+                      Icons.favorite_border,
+                      color: Colors.black,
+                    ),
                   ),
                   label: "favorite"),
               BottomNavigationBarItem(

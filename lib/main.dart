@@ -6,7 +6,7 @@ void main() {
   runApp(
     ChangeNotifierProvider(
       create: (context) => BookProvider(),
-      child: MainApp(),
+      child: const MainApp(),
     ),
   );
 }
@@ -14,6 +14,8 @@ class MainApp extends StatelessWidget {
   const MainApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: SplashScreen());
+    return const MaterialApp(
+      home: SplashScreen());
+
   }
 }

@@ -4,33 +4,18 @@ class BookData {
   final String description;
   final double rating;
   final double price;
-  int quantite;
   final String imageUrl;
+  final String category;
 
-  BookData({
+  const BookData({
     required this.title,
     required this.author,
     required this.description,
     required this.rating,
     required this.price,
     required this.imageUrl,
-    this.quantite = 1,
+    this.category = 'General',
   });
-
-  void increment() {
-    quantite++;
-  }
-
-  void decrement() {
-    if (quantite > 1) {
-      quantite--;
-    }
-  }
-
-  double priceIncrement() {
-    double result = price * quantite;
-    return double.parse(result.toStringAsFixed(2));
-  }
 
   // Override equality and hashCode
   @override

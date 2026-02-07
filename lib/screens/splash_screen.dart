@@ -1,4 +1,4 @@
-import 'package:book_shop/screens/home_screem.dart';
+import 'package:book_shop/screens/main_navigation.dart';
 import 'package:book_shop/utils/clipper.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +47,8 @@ class SplashScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                    builder: (context) => const HomeScreem()),
+                                    builder: (context) =>
+                                        const MainNavigation()),
                                 (route) => false);
                           },
                           child: const Text("Get Started",

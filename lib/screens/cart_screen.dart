@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/book_provider.dart';
-import '../utils/book_data.dart';
-import 'home_screem.dart'; // Assuming this is your home screen file
+import '../models/cart_item.dart';
+import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
@@ -23,17 +25,17 @@ class _CartScreenState extends State<CartScreen> {
     return "$result...";
   }
 
-  String totalPrice(List<BookData> books) {
+  String totalPrice(List<CartItem> cartItems) {
     double total = 0;
-    for (BookData book in books) {
-      total += book.priceIncrement();
+    for (CartItem item in cartItems) {
+      total += item.totalPrice;
     }
     return total.toStringAsFixed(2);
   }
 
   @override
   Widget build(BuildContext context) {
-    final books = context.watch<BookProvider>().books;
+    final cartItems = context.watch<BookProvider>().cartItems;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -42,29 +44,7 @@ class _CartScreenState extends State<CartScreen> {
         child: AppBar(
           leadingWidth: 70,
           surfaceTintColor: Colors.white,
-          leading: Container(
-            margin: const EdgeInsets.only(left: 20),
-            width: 50,
-            height: 50,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xffF6F6F4),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const HomeScreem()),
-                  (route) => false,
-                );
-              },
-              child: const Icon(
-                Icons.arrow_back_ios,
-                color: Color(0xffD4A056),
-                size: 20,
-              ),
-            ),
-          ),
+          automaticallyImplyLeading: false,
           actions: [
             Container(
               margin: const EdgeInsets.only(right: 20),
@@ -78,7 +58,6 @@ class _CartScreenState extends State<CartScreen> {
               child: GestureDetector(
                 onTap: () {
                   Provider.of<BookProvider>(context, listen: false).clearList();
-                  setState(() {});
                 },
                 child: const Icon(
                   Icons.delete,
@@ -96,58 +75,102 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        height: 130,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                const Text("Total price:"),
-                Text(
-                  "\$${totalPrice(books)}",
-                  style: const TextStyle(
-                      fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            MaterialButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              onPressed: () {},
-              color: const Color(0xffD4A056),
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-              child: const Row(
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          constraints: const BoxConstraints(minHeight: 100, maxHeight: 130),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Text("Total price:"),
                   Text(
-                    "Checkout",
-                    style: TextStyle(fontSize: 22, color: Colors.white),
+                    "\$${totalPrice(cartItems)}",
+                    style: const TextStyle(
+                        fontSize: 32, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white,
-                  )
                 ],
               ),
-            )
-          ],
+              MaterialButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                onPressed: () {
+                  if (cartItems.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Cart is empty!'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CheckoutScreen(
+                        totalAmount: double.parse(totalPrice(cartItems)),
+                      ),
+                    ),
+                  );
+                },
+                color: const Color(0xffD4A056),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
+                child: const Row(
+                  children: [
+                    Text(
+                      "Checkout",
+                      style: TextStyle(fontSize: 22, color: Colors.white),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
-      body: books.isEmpty
-          ? const Center(
-              child: Text(
-                "No books in the cart!",
-                style: TextStyle(fontSize: 24, color: Colors.black54),
+      body: cartItems.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined,
+                      size: 100, color: Colors.grey[400]),
+                  const SizedBox(height: 20),
+                  const Text("Your cart is empty",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  Text("Add some books to get started!",
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                  const SizedBox(height: 30),
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.shopping_bag, color: Colors.white),
+                    label: const Text('Browse Books',
+                        style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xffD4A056),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 15),
+                    ),
+                  ),
+                ],
               ),
             )
           : Container(
@@ -155,7 +178,7 @@ class _CartScreenState extends State<CartScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 0),
               child: ListView.builder(
                 physics: const BouncingScrollPhysics(),
-                itemCount: books.length,
+                itemCount: cartItems.length,
                 itemBuilder: (context, index) {
                   return Container(
                     padding: const EdgeInsets.symmetric(vertical: 15),
@@ -166,10 +189,18 @@ class _CartScreenState extends State<CartScreen> {
                           borderRadius: BorderRadius.circular(14),
                           elevation: 10,
                           child: Image.asset(
-                            books[index].imageUrl,
+                            cartItems[index].book.imageUrl,
                             width: 80,
                             height: 140,
                             fit: BoxFit.fill,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                width: 80,
+                                height: 140,
+                                child: const Icon(Icons.broken_image, size: 40),
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(
@@ -179,12 +210,12 @@ class _CartScreenState extends State<CartScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              splitTitle(books[index].title),
+                              splitTitle(cartItems[index].book.title),
                               style: const TextStyle(
                                   fontSize: 24, color: Colors.black),
                             ),
                             Text(
-                              "\$${books[index].priceIncrement().toString()}",
+                              "\$${cartItems[index].totalPrice.toString()}",
                               style: const TextStyle(
                                   fontSize: 24,
                                   color: Color(0xffD4A056),
@@ -200,8 +231,9 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                   child: IconButton(
                                     onPressed: () {
-                                      books[index].decrement();
-                                      setState(() {});
+                                      Provider.of<BookProvider>(context,
+                                              listen: false)
+                                          .decrementQuantity(cartItems[index]);
                                     },
                                     icon: const Icon(Icons.remove),
                                     iconSize: 20,
@@ -211,7 +243,7 @@ class _CartScreenState extends State<CartScreen> {
                                   width: 10,
                                 ),
                                 Text(
-                                  "${books[index].quantite}",
+                                  "${cartItems[index].quantity}",
                                   style: const TextStyle(fontSize: 24),
                                 ),
                                 const SizedBox(
@@ -225,8 +257,9 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                   child: IconButton(
                                     onPressed: () {
-                                      books[index].increment();
-                                      setState(() {});
+                                      Provider.of<BookProvider>(context,
+                                              listen: false)
+                                          .incrementQuantity(cartItems[index]);
                                     },
                                     icon: const Icon(Icons.add),
                                     iconSize: 20,

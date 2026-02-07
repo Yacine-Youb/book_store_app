@@ -1,12 +1,11 @@
-import 'package:book_shop/utils/book_data.dart';
+import 'package:book_shop/models/book_data.dart';
 import 'package:book_shop/utils/book_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class BestSellingCard extends StatelessWidget {
-  BestSellingCard({super.key, required this.bookData});
+  const BestSellingCard({super.key, required this.bookData});
   final BookData bookData;
-  BookProvider _bookProvider = BookProvider();
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +58,10 @@ class BestSellingCard extends StatelessWidget {
                       ),
                       IconButton(
                         onPressed: () {
-                          if (!_bookProvider.books.contains(bookData)) {
-                            Provider.of<BookProvider>(context, listen: false).addBook(bookData);
+                          final provider =
+                              Provider.of<BookProvider>(context, listen: false);
+                          if (!provider.books.contains(bookData)) {
+                            provider.addBook(bookData);
                           }
                         },
                         icon: const Icon(Icons.add),
@@ -88,7 +89,13 @@ class BestSellingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(5),
                   elevation: 5,
                   child: Image.asset(bookData.imageUrl,
-                      width: 75, height: 100, fit: BoxFit.fill)),
+                      width: 75, height: 100, fit: BoxFit.fill,
+                      errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 30),
+                    );
+                  })),
             )),
       ],
     );

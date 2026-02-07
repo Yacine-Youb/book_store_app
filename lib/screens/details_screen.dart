@@ -1,5 +1,6 @@
-import 'package:book_shop/utils/book_data.dart';
+import 'package:book_shop/models/book_data.dart';
 import 'package:book_shop/utils/book_provider.dart';
+import 'package:book_shop/screens/cart_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
@@ -8,8 +9,7 @@ class ReadMoreText extends StatefulWidget {
   final String text;
   final int maxLength;
 
-  const ReadMoreText({Key? key, required this.text, this.maxLength = 100})
-      : super(key: key);
+  const ReadMoreText({super.key, required this.text, this.maxLength = 100});
 
   @override
   _ReadMoreTextState createState() => _ReadMoreTextState();
@@ -23,7 +23,7 @@ class _ReadMoreTextState extends State<ReadMoreText> {
     final displayedText = isExpanded
         ? widget.text
         : widget.text.length > widget.maxLength
-            ? widget.text.substring(0, widget.maxLength) + '...'
+            ? '${widget.text.substring(0, widget.maxLength)}...'
             : widget.text;
 
     return Column(
@@ -54,7 +54,7 @@ class _ReadMoreTextState extends State<ReadMoreText> {
 class DetailsScreen extends StatefulWidget {
   final BookData bookData;
 
-  DetailsScreen({Key? key, required this.bookData}) : super(key: key);
+  const DetailsScreen({super.key, required this.bookData});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -62,6 +62,18 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   bool addedToFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if book is already in favorites and set initial state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<BookProvider>(context, listen: false);
+      setState(() {
+        addedToFavourite = provider.favouriteBooks.contains(widget.bookData);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +220,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Provider.of<BookProvider>(context, listen: false)
+                      .addToCart(widget.bookData);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${widget.bookData.title} added to cart'),
+                      duration: const Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'VIEW CART',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const CartScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
                 icon: const Icon(HugeIcons.strokeRoundedShoppingCart01),
                 iconSize: 30,
               ),
@@ -226,7 +258,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   ),
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                // Add to cart first
+                Provider.of<BookProvider>(context, listen: false)
+                    .addToCart(widget.bookData);
+
+                // Navigate directly to cart
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                );
+              },
               child: const Row(
                 children: [
                   Text(
